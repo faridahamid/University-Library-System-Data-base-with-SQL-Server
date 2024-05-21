@@ -1,0 +1,229 @@
+/*==============================================================*/
+/* DBMS name:      Microsoft SQL Server 2017                    */
+/* Created on:     18/05/2024 21:50:23                          */
+/*==============================================================*/
+
+
+if exists (select 1
+            from  sysobjects
+           where  id = object_id('_CODE_ADMIN')
+            and   type = 'U')
+   drop table _CODE_ADMIN
+go
+
+if exists (select 1
+            from  sysobjects
+           where  id = object_id('_CODE_BOOK')
+            and   type = 'U')
+   drop table _CODE_BOOK
+go
+
+if exists (select 1
+            from  sysobjects
+           where  id = object_id('_CODE_BOOKING_SLOT')
+            and   type = 'U')
+   drop table _CODE_BOOKING_SLOT
+go
+
+if exists (select 1
+            from  sysobjects
+           where  id = object_id('_CODE_BORROW')
+            and   type = 'U')
+   drop table _CODE_BORROW
+go
+
+if exists (select 1
+            from  sysobjects
+           where  id = object_id('_CODE_JOURNAL')
+            and   type = 'U')
+   drop table _CODE_JOURNAL
+go
+
+if exists (select 1
+            from  sysobjects
+           where  id = object_id('_CODE_PUBLISHER')
+            and   type = 'U')
+   drop table _CODE_PUBLISHER
+go
+
+if exists (select 1
+            from  sysobjects
+           where  id = object_id('_CODE_RATES')
+            and   type = 'U')
+   drop table _CODE_RATES
+go
+
+if exists (select 1
+            from  sysobjects
+           where  id = object_id('_CODE_RESEARCH_PAPER')
+            and   type = 'U')
+   drop table _CODE_RESEARCH_PAPER
+go
+
+if exists (select 1
+            from  sysobjects
+           where  id = object_id('_CODE_STUDENT')
+            and   type = 'U')
+   drop table _CODE_STUDENT
+go
+
+if exists (select 1
+            from  sysobjects
+           where  id = object_id('_CODE_USER')
+            and   type = 'U')
+   drop table _CODE_USER
+go
+
+/*==============================================================*/
+/* Table: _CODE_USER                                            */
+/*==============================================================*/
+create table _CODE_USER (
+   USER_ID              int                  not null,
+   NAME                 varchar(100)         not null,
+   AGE                  int                  not null,
+   PASSWORD             varchar(100)         not null,
+   EMAIL                varchar(100)         not null,
+   constraint PK__CODE_USER primary key nonclustered (USER_ID)
+)
+go
+
+/*==============================================================*/
+/* Table: _CODE_ADMIN                                           */
+/*==============================================================*/
+create table _CODE_ADMIN (
+   USE_USER_ID          int                  not null,
+   NAME                 varchar(100)         not null,
+   AGE                  int                  not null,
+   PASSWORD             varchar(100)         not null,
+   EMAIL                varchar(100)         not null,
+   SALARY               int                  not null,
+   constraint PK__CODE_ADMIN primary key nonclustered (USE_USER_ID),
+   constraint FK__CODE_AD_INHERITAN__CODE_US foreign key (USE_USER_ID)
+      references _CODE_USER (USER_ID)
+)
+go
+
+/*==============================================================*/
+/* Table: _CODE_PUBLISHER                                       */
+/*==============================================================*/
+create table _CODE_PUBLISHER (
+   PUBLISHER_ID         varchar(100)         not null,
+   NAME                 varchar(100)         not null,
+   ISBN                 varchar(50)          not null,
+   ADDRESS              char(10)             not null,
+   constraint PK__CODE_PUBLISHER primary key nonclustered (PUBLISHER_ID)
+)
+go
+
+/*==============================================================*/
+/* Table: _CODE_BORROW                                          */
+/*==============================================================*/
+create table _CODE_BORROW (
+   USER_ID              int                  not null,
+   TRANDATE             datetime             not null,
+   RETURNDATE           datetime             not null,
+   constraint PK__CODE_BORROW primary key nonclustered (USER_ID),
+   constraint FK__CODE_BO_BORROWING__CODE_US foreign key (USER_ID)
+      references _CODE_USER (USER_ID)
+)
+go
+
+/*==============================================================*/
+/* Table: _CODE_BOOK                                            */
+/*==============================================================*/
+create table _CODE_BOOK (
+   USER_ID              int                  not null,
+   PUBLISHER_ID         varchar(100)         null,
+   ISBN                 varchar(50)          not null,
+   TITLE                varchar(100)         not null,
+   AUTHOR               varchar(100)         not null,
+   PUBLICATION_YEAR     char(4)              not null,
+   EDITION              int                  not null,
+   constraint PK__CODE_BOOK primary key nonclustered (USER_ID, ISBN),
+   constraint FK__CODE_BO_PUBLISHES__CODE_PU foreign key (PUBLISHER_ID)
+      references _CODE_PUBLISHER (PUBLISHER_ID),
+   constraint FK__CODE_BO_BORROWED__CODE_BO foreign key (USER_ID)
+      references _CODE_BORROW (USER_ID)
+)
+go
+
+/*==============================================================*/
+/* Table: _CODE_BOOKING_SLOT                                    */
+/*==============================================================*/
+create table _CODE_BOOKING_SLOT (
+   SLOT_ID              int                  not null,
+   SLOT_DATE            datetime             not null,
+   SLOT_START_DATE      datetime             not null,
+   SLOT_END_DATE        datetime             not null,
+   USER_ID              int                  not null,
+   constraint PK__CODE_BOOKING_SLOT primary key nonclustered (SLOT_ID),
+   constraint FK__CODE_BO_BOOKS__CODE_US foreign key (USER_ID)
+      references _CODE_USER (USER_ID)
+)
+go
+
+/*==============================================================*/
+/* Table: _CODE_JOURNAL                                         */
+/*==============================================================*/
+create table _CODE_JOURNAL (
+   JOURNAL_CODE         varchar(50)          not null,
+   NAME                 varchar(100)         not null,
+   IMPACT_FACTORS       numeric              not null,
+   LICENSE              varchar(50)          not null,
+   VERSION              int                  not null,
+   PUBLICATION_SCHEDULE datetime             not null,
+   LANGUAGE             varchar(50)          not null,
+   constraint PK__CODE_JOURNAL primary key nonclustered (JOURNAL_CODE)
+)
+go
+
+/*==============================================================*/
+/* Table: _CODE_RATES                                           */
+/*==============================================================*/
+create table _CODE_RATES (
+   RATINGS              float(3)             not null,
+   USER_ID              varchar(100)         not null,
+   BOO_USER_ID          int                  not null,
+   ISBN                 varchar(50)          not null,
+   constraint PK__CODE_RATES primary key nonclustered (USER_ID, BOO_USER_ID, ISBN),
+   constraint FK__CODE_RA_RATES__CODE_US foreign key (RATINGS)
+      references _CODE_USER (USER_ID),
+   constraint FK__CODE_RA_IS_RATED__CODE_BO foreign key (BOO_USER_ID, ISBN)
+      references _CODE_BOOK (USER_ID, ISBN)
+)
+go
+
+/*==============================================================*/
+/* Table: _CODE_RESEARCH_PAPER                                  */
+/*==============================================================*/
+create table _CODE_RESEARCH_PAPER (
+   USER_ID              int                  null,
+   JOURNAL_CODE         varchar(50)          not null,
+   TITLE                varchar(100)         not null,
+   PUBLISH_DATE         datetime             not null,
+   PUBLISHER            varchar(100)         not null,
+   constraint PK__CODE_RESEARCH_PAPER primary key nonclustered (JOURNAL_CODE),
+   constraint FK__CODE_RE_READS__CODE_US foreign key (USER_ID)
+      references _CODE_USER (USER_ID),
+   constraint FK__CODE_RE_CONTAINS__CODE_JO foreign key (JOURNAL_CODE)
+      references _CODE_JOURNAL (JOURNAL_CODE)
+)
+go
+
+/*==============================================================*/
+/* Table: _CODE_STUDENT                                         */
+/*==============================================================*/
+create table _CODE_STUDENT (
+   USE_USER_ID          int                  not null,
+   NAME                 varchar(100)         not null,
+   AGE                  int                  not null,
+   PASSWORD             varchar(100)         not null,
+   EMAIL                varchar(100)         not null,
+   FACULTY              varchar(100)         not null,
+   constraint PK__CODE_STUDENT primary key nonclustered (USE_USER_ID),
+   constraint FK__CODE_ST_INHERITAN__CODE_US foreign key (USE_USER_ID)
+      references _CODE_USER (USER_ID)
+)
+go
+
+
